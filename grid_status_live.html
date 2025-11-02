@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>The GRID Booking Status (Live Read-Only)</title>
+<style>
+  body { font-family: system-ui, -apple-system, Arial; margin: 16px; background: #f6f7fb; }
+  h1 { text-align:center; font-size:28px; font-weight:700; color:#222; margin-bottom:16px; }
+  #toolbar { margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content:center; }
+  button, label.file-label { padding: 8px 10px; border-radius: 6px; border: 1px solid #cfd6ea; background: #f0f0f0; cursor: not-allowed; opacity: 0.6; }
+  #canvasWrap { position: relative; display: inline-block; border: 1px solid #ddd; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+  #bgImage { display: block; max-width: 95vw; height: auto; user-select: none; -webkit-user-drag: none; }
+  .plot-btn { position: absolute; display: flex; align-items: center; justify-content: center; padding: 4px 6px; border: none; border-radius: 6px; cursor: default; box-shadow: 0 2px 6px rgba(0,0,0,0.12); font-size: 12px; color: #000; text-align: center; overflow: hidden; transition: background 0.2s; }
+</style>
+</head>
+<body>
+  <button id="toggleToolbar" style="position: fixed; top: 12px; right: 16px; z-index: 9999; padding: 8px 10px; border-radius: 50%; background: white; border: 1px solid #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer;">⚙️</button>
+  <h1>The GRID Booking Status</h1>
+  <div id="toolbar" style="display:none;">
+    <button>➕ Add button</button>
+    <button>🗑️ Clear all</button>
+    <button>⬇️ Export JSON</button>
+    <button>🖼️ Export Image</button>
+    <button>📄 Export PDF</button>
+    <label class="file-label">⬆️ Import</label>
+    <button>Reset saved</button>
+    <div id="info" style="color:#555; font-size:13px; margin-left:6px;">Read-only mode • Buttons auto-loaded from GitHub</div>
+  </div>
+
+  <div id="canvasWrap">
+    <img id="bgImage" src="data:image/jpeg;base64,REPLACE_WITH_YOUR_IMAGE_BASE64" alt="Grid"/>
+  </div>
+
+  <script>
+    const toggle = document.getElementById('toggleToolbar');
+    const toolbar = document.getElementById('toolbar');
+    toggle.addEventListener('click', () => {
+      toolbar.style.display = toolbar.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    const canvasWrap = document.getElementById('canvasWrap');
+    const JSON_URL = 'https://raw.githubusercontent.com/AYODHYACITY/grid-booking-status/main/layout.json';
+
+    async function loadLayout() {
+      try {
+        const res = await fetch(JSON_URL);
+        if (!res.ok) throw new Error('Layout not found');
+        const layout = await res.json();
+        layout.forEach(btn => {
+          const el = document.createElement('div');
+          el.className = 'plot-btn';
+          el.style.left = btn.x + 'px';
+          el.style.top = btn.y + 'px';
+          el.style.background = btn.color || '#fff';
+          el.textContent = btn.text;
+          canvasWrap.appendChild(el);
+        });
+      } catch (err) {
+        console.error('Error loading layout:', err);
+        const msg = document.createElement('div');
+        msg.textContent = '❌ Unable to load layout.json from GitHub.';
+        msg.style.color = 'red';
+        msg.style.padding = '10px';
+        document.body.appendChild(msg);
+      }
+    }
+
+    loadLayout();
+  </script>
+</body>
+</html>
